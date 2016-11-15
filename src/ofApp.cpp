@@ -7,7 +7,7 @@ void ofApp::setup(){
     bUpdateBgColor = true;
     
     fullscreen = true;
-    font.load("font/cooperBlack.ttf", 80 );
+    font.load("font/cooperBlack.ttf", 120 );
     
     frameW = 720; frameH = 720;
     camW = 1280; camH = 720;
@@ -208,8 +208,10 @@ void ofApp::draw(){
     }
     
     if ( display_gif_done ) {
-        font.drawString( "GIF CAPTURED!", ofGetWidth() / 2- 400, ofGetWidth() / 2 - 100 );
-        font.drawString( "<-----", ofGetWidth() / 2 - 200, ofGetWidth() / 2 + 100 );
+        //string success = "GIF CAPTURED!";
+        //string over_there = "<-----";
+        font.drawString( "GIF CAPTURED!", ofGetWidth() / 2 - 700, ofGetHeight() / 2 - 100 );
+        font.drawString( "<-----", ofGetWidth() / 2 - 500, ofGetHeight() / 2 + 100 );
     }
 
     

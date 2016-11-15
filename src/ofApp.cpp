@@ -25,23 +25,24 @@ void ofApp::setup(){
     /////////////////////////
     //transparent gif layer//
     /////////////////////////
+    
     f_current_gif = 0;
     f_max_gifs = 5;
-    
     f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
     if(f_nFiles) {
         for(int i=0; i<f_dir.size(); i++) {
             // add the image to the vector
             string filePath = f_dir.getPath(i);
             f_images.push_back(ofImage());
-            f_images.back().loadImage(filePath);
+            f_images.back().load(filePath);
         }
     }
-    
     else printf("Could not find folder\n");
     
-    // webcam setup
-    webcam.setDesiredFrameRate(60);
+    ////////////////
+    //mask  layer//
+    ///////////////
+    //webcam.setDesiredFrameRate(60);
     webcam.initGrabber(camW, camH);
     
     // maskee
@@ -57,9 +58,9 @@ void ofApp::setup(){
     bUpdateBgColor = false;
     
     //fbo
-    fbo.allocate( frameW, frameH, GL_RGBA );
+    fbo.allocate( frameW, frameH, GL_RGB );
     fbo.begin();
-    ofClear(255,255,255, 0);
+    ofClear(255,255,255);
     fbo.end();
     
     //gif encoder
@@ -329,7 +330,7 @@ void ofApp::captureFrame() {
                         char_pix,
                         fbo.getWidth(),
                         fbo.getHeight(),
-                        32,
+                        24,
                         1 / sequenceFPS
                         ); //.1f
     

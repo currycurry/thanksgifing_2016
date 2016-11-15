@@ -51,11 +51,9 @@ public:
     vector <ofImage> f_images;
     int f_current_gif;
     int f_nFiles;
-    //int f_numFrames_import;
-    //int f_duration;
-    bool  bFrameIndependent;
     int f_images_x, f_images_y;
     int f_max_gifs;
+    bool  bFrameIndependent;
 
     
     // === FBO =============================

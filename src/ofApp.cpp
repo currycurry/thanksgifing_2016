@@ -37,7 +37,28 @@ void ofApp::setup(){
             f_images.back().load(filePath);
         }
     }
-    else printf("Could not find folder\n");
+    else printf("Could not find foreground folder\n");
+    cout << "f_images.size(): " << f_images.size() << endl;
+
+    
+    /////////////////////////
+    //background gif layer//
+    /////////////////////////
+    
+    b_current_gif = 0;
+    b_max_gifs = 6;
+    b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
+    if(b_nFiles) {
+        for(int i=0; i<b_dir.size(); i++) {
+            // add the image to the vector
+            string filePath = b_dir.getPath(i);
+            b_images.push_back(ofImage());
+            b_images.back().load(filePath);
+        }
+    }
+    else printf("Could not find background folder\n");
+    cout << "b_images.size(): " << b_images.size() << endl;
+
     
     ////////////////
     //mask  layer//
@@ -70,7 +91,13 @@ void ofApp::setup(){
     gifEncoder.setup(frameW, frameH, export_frame_duration, 256);
     ofAddListener(ofxGifEncoder::OFX_GIF_SAVE_FINISHED, this, &ofApp::onGifSaved);
     nFrames = 0;
-    totalFrames = f_images.size();
+    
+    if ( f_images.size() > b_images.size() ) {
+        totalFrames = f_images.size();
+    }
+    else {
+        totalFrames = b_images.size();
+    }
     cout << "totalFrames: " << totalFrames << endl;
     capture_gif = false;
     frameIndex = 0;
@@ -206,8 +233,27 @@ void ofApp::drawToFBO(){
     ofSetColor(255);
     ofBackground(0);
     
-    //background
-    bg_image.draw(0, 0, frameW, frameH );
+    //whichever sequence has more frames determines how long the output gif will be
+    f_frameIndex = (int)( ofGetElapsedTimef() * sequenceFPS ) % f_images.size();
+    b_frameIndex = (int)( ofGetElapsedTimef() * sequenceFPS ) % b_images.size();
+    
+    if ( f_frameIndex >= b_frameIndex ) {
+        frameIndex = f_frameIndex;
+    }
+    else {
+        frameIndex = b_frameIndex;
+    }
+    
+    // ============= background =============
+    if((int)b_images.size() <= 0) {
+        ofSetColor(255);
+        ofDrawBitmapString("No Background Images...", 150, ofGetHeight()/2);
+        return;
+    }
+    // draw the image sequence at the new frame count
+    ofSetColor(255);
+    b_images[ b_frameIndex ].draw( b_images_x, b_images_y, frameW, frameH );
+    
     
     // ============= cam mask =============
     ofEnableAlphaBlending();
@@ -224,23 +270,13 @@ void ofApp::drawToFBO(){
         return;
     }
     
-    frameIndex = 0;
-    
-    if(bFrameIndependent) {
-        // calculate the frame index based on the app time
-        // and the desired sequence fps. then mod to wrap
-        frameIndex = (int)( ofGetElapsedTimef() * sequenceFPS ) % f_images.size();
-    }
-    else {
-        // set the frame index based on the app frame
-        // count. then mod to wrap.
-        frameIndex = ofGetFrameNum() % f_images.size();
-    }
-    
-    // draw the image sequence at the new frame count
+       // draw the image sequence at the new frame count
     ofSetColor(255);
-    f_images[ frameIndex ].draw( f_images_x, f_images_y, frameW, frameH );
+    f_images[ f_frameIndex ].draw( f_images_x, f_images_y, frameW, frameH );
     
+    
+    // ============= gif encoder =============
+
     if ( capture_gif && lastFrameIndex != frameIndex ) {
         cout << "capturing" << endl;
         captureFrame();
@@ -258,7 +294,10 @@ void ofApp::drawToFBO(){
         }
     }
     
+    f_lastFrameIndex = f_frameIndex;
+    b_lastFrameIndex = b_frameIndex;
     lastFrameIndex = frameIndex;
+
     ofDisableAlphaBlending();
 
     
@@ -380,31 +419,68 @@ void ofApp::keyPressed(int key){
             startTimer = true;
             break;
             
+            
+        case OF_KEY_UP:
+            b_current_gif += 1;
+            if ( b_current_gif > b_max_gifs ) {
+                b_current_gif = 0;
+            }
+            b_images.clear();
+            
+            b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
+            if(b_nFiles) {
+                
+                for(int i=0; i<b_dir.size(); i++) {
+                    string filePath = b_dir.getPath(i);
+                    b_images.push_back(ofImage());
+                    b_images.back().load(filePath);
+                }
+            }
+            else printf("Could not find background folder\n");
+            setTotalFrames();
+            cout << "b_current_gif: " << b_current_gif << endl;
+            break;
+            
+        case OF_KEY_DOWN:
+            b_current_gif -= 1;
+            if ( b_current_gif <= 0 ) {
+                b_current_gif = b_max_gifs;
+            }
+            b_images.clear();
+            
+            b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
+            if(b_nFiles) {
+                for(int i=0; i<b_dir.size(); i++) {
+                    string filePath = b_dir.getPath(i);
+                    b_images.push_back(ofImage());
+                    b_images.back().load(filePath);
+                }
+            }
+            else printf("Could not find background folder\n");
+            setTotalFrames();
+            cout << "b_current_gif: " << b_current_gif << endl;
+            break;
+
+
         case OF_KEY_RIGHT:
             f_current_gif += 1;
             if ( f_current_gif > f_max_gifs ) {
                 f_current_gif = 0;
             }
             f_images.clear();
-            //sequenceFPS = frame_rates[ f_current_gif ];
             
             f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
             if(f_nFiles) {
-                
-                for(int i=0; i<f_dir.numFiles(); i++) {
+                for(int i=0; i<f_dir.size(); i++) {
                     string filePath = f_dir.getPath(i);
                     f_images.push_back(ofImage());
-                    f_images.back().loadImage(filePath);
+                    f_images.back().load(filePath);
                 }
             }
-            
-            else printf("Could not find folder\n");
-            totalFrames = f_images.size();
+            else printf("Could not find foreground folder\n");
+            setTotalFrames();
             f_images_x = 0;
             f_images_y = 0;
-            cout << "totalFrames: " << totalFrames << endl;
-            
-            
             cout << "f_current_gif: " << f_current_gif << endl;
             break;
             
@@ -414,20 +490,19 @@ void ofApp::keyPressed(int key){
                 f_current_gif = f_max_gifs;
             }
             f_images.clear();
-            //sequenceFPS = frame_rates[ f_current_gif ];
-            
             f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
             if(f_nFiles) {
-                for(int i=0; i<f_dir.numFiles(); i++) {
+                for(int i=0; i<f_dir.size(); i++) {
                     string filePath = f_dir.getPath(i);
                     f_images.push_back(ofImage());
-                    f_images.back().loadImage(filePath);
+                    f_images.back().load(filePath);
                 }
             }
-            else printf("Could not find folder\n");
-            totalFrames = f_images.size();
-            cout << "totalFrames: " << totalFrames << endl;
-            
+            else printf("Could not find foreground folder\n");
+            setTotalFrames();
+            f_images_x = 0;
+            f_images_y = 0;
+            cout << "f_current_gif: " << f_current_gif << endl;
             break;
             
         case 't':
@@ -452,6 +527,19 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::setTotalFrames(){
+
+    if ( f_images.size() > b_images.size() ) {
+        totalFrames = f_images.size();
+    }
+    else {
+        totalFrames = b_images.size();
+    }
+    cout << "total frames set to: " << totalFrames << endl;
     
 }
 

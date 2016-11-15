@@ -54,7 +54,18 @@ public:
     int f_images_x, f_images_y;
     int f_max_gifs;
     bool  bFrameIndependent;
+    int f_frameIndex;
+    int f_lastFrameIndex;
 
+    // === Background Images =============================
+    ofDirectory b_dir;
+    vector <ofImage> b_images;
+    int b_current_gif;
+    int b_nFiles;
+    int b_images_x, b_images_y;
+    int b_max_gifs;
+    int b_frameIndex;
+    int b_lastFrameIndex;
     
     // === FBO =============================
     ofFbo fbo;
@@ -76,6 +87,7 @@ public:
     int totalFrames;
     int frameIndex;
     int lastFrameIndex;
+    void setTotalFrames();
     
     int     picStart, doneStart;
     int     picTimer, doneTimer;

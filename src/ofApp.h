@@ -47,15 +47,15 @@ public:
     bool bUpdateBgColor;
     
     // === Foreground Images =============================
-    ofDirectory dir;
-    vector <ofImage> images;
-    int current_gif;
-    int nFiles;
-    int numFrames_import;
-    int duration;
+    ofDirectory f_dir;
+    vector <ofImage> f_images;
+    int f_current_gif;
+    int f_nFiles;
+    //int f_numFrames_import;
+    //int f_duration;
     bool  bFrameIndependent;
-    int images_x, images_y;
-    int max_gifs;
+    int f_images_x, f_images_y;
+    int f_max_gifs;
 
     
     // === FBO =============================

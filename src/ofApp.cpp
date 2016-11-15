@@ -190,17 +190,17 @@ void ofApp::draw(){
     
     if ( startTimer ) {
         if ( picTimer < picDelay / 6 || ( picTimer > 2 * picDelay / 6 && picTimer < 3 * picDelay / 6 ) || ( picTimer > 4 * picDelay / 6 && picTimer < 5 * picDelay / 6 ) ) {
-            ofSetColor( 250, 214, 147 );
+            ofEnableAlphaBlending();
+            ofSetColor( 250, 250, 250, 100 );
             ofFill();
-            
-            ofRect( 0, 0, ofGetWidth() / 2 - ofGetHeight() / 2, ofGetHeight());
-            ofRect( ofGetWidth() - (ofGetWidth() / 2 - ofGetHeight() / 2) , 0, ofGetWidth() / 2 - ofGetHeight() / 2, ofGetHeight());
+            ofRect( 0, 0, ofGetWidth(), ofGetHeight());
+            ofDisableAlphaBlending();
             ofSetColor( 255, 255, 255 );
         }
     }
     
     if ( capture_gif ) {
-        ofSetColor( 222, 40, 57 );
+        ofSetColor( 250, 250, 250 );
         ofFill();
         ofRect( 0, 0, ofGetWidth() / 2 - ofGetHeight() / 2, ofGetHeight());
         ofRect( ofGetWidth() - (ofGetWidth() / 2 - ofGetHeight() / 2) , 0, ofGetWidth() / 2 - ofGetHeight() / 2, ofGetHeight());
@@ -521,18 +521,20 @@ void ofApp::keyPressed(int key){
             break;
             
         case '8':
-            if ( bMoveable[ f_current_gif ]) {
-                f_images_y += 10;
-                if ( f_images_y >= frameW ) {
-                    f_images_y = -frameW;
-                }
-            }
-            break;
-        case '2':
+
             if ( bMoveable[ f_current_gif ]) {
                 f_images_y -= 10;
                 if ( f_images_y <= -frameW ) {
                     f_images_y = frameW;
+                }
+            }
+
+            break;
+        case '2':
+            if ( bMoveable[ f_current_gif ]) {
+                f_images_y += 10;
+                if ( f_images_y >= frameW ) {
+                    f_images_y = -frameW;
                 }
             }
             break;
@@ -551,6 +553,42 @@ void ofApp::keyPressed(int key){
                     f_images_x = -frameW;
                 }
             }
+            break;
+            
+        case '0':
+            if ( !startTimer && !capture_gif ) {
+                b_current_gif = (int) ofRandom( b_max_gifs );
+                b_images.clear();
+                b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
+                if(b_nFiles) {
+                    for(int i=0; i<b_dir.size(); i++) {
+                        string filePath = b_dir.getPath(i);
+                        b_images.push_back(ofImage());
+                        b_images.back().load(filePath);
+                    }
+                }
+                else printf("Could not find background folder\n");
+                setTotalFrames();
+                cout << "b_current_gif: " << b_current_gif << endl;
+                
+                f_current_gif = (int) ofRandom( f_max_gifs );
+                f_images.clear();
+                f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
+                if(f_nFiles) {
+                    for(int i=0; i<f_dir.size(); i++) {
+                        string filePath = f_dir.getPath(i);
+                        f_images.push_back(ofImage());
+                        f_images.back().load(filePath);
+                    }
+                }
+                else printf("Could not find foreground folder\n");
+                setTotalFrames();
+                f_images_x = 0;
+                f_images_y = 0;
+                cout << "f_current_gif: " << f_current_gif << endl;
+
+            }
+            
             break;
 
 

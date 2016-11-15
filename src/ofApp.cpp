@@ -5,27 +5,24 @@ void ofApp::setup(){
     
     bShowGui = false;
     bUpdateBgColor = true;
-    bFrameIndependent = true;
     
-    frameW = 640; frameH = 640;
-    camW = 640; camH = 480;
     fullscreen = true;
+    font.load("font/cooperBlack.ttf", 80 );
     
-    font.loadFont("font/cooperBlack.ttf", 80 );
+    frameW = 720; frameH = 720;
+    camW = 1280; camH = 720;
     
-    maskW = (frameH * camW ) / camH;
+    maskW = -( frameH * camW ) / camH;
     maskH = frameH;
-    maskX = -( maskW - frameW ) / 2;
+    maskX = frameW + ( -maskW - frameW ) / 2;
+    cout << "maskX: " << maskX << endl;
     maskY = 0;
-    
-    ofSetWindowShape(camW*2, camH*1.5f);
     
     chromakey = new ofxChromaKeyShader(camW, camH);
     
     /////////////////////////
     //transparent gif layer//
     /////////////////////////
-    
     f_current_gif = 0;
     f_max_gifs = 7;
     f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
@@ -39,6 +36,16 @@ void ofApp::setup(){
     }
     else printf("Could not find foreground folder\n");
     cout << "f_images.size(): " << f_images.size() << endl;
+    
+    bMoveable.resize( f_max_gifs );
+    bMoveable[ 0 ] = 0;
+    bMoveable[ 1 ] = 1;
+    bMoveable[ 2 ] = 0;
+    bMoveable[ 3 ] = 0;
+    bMoveable[ 4 ] = 0;
+    bMoveable[ 5 ] = 1;
+    bMoveable[ 6 ] = 1;
+    bMoveable[ 7 ] = 1;
 
     
     /////////////////////////
@@ -252,12 +259,12 @@ void ofApp::drawToFBO(){
     }
     // draw the image sequence at the new frame count
     ofSetColor(255);
-    b_images[ b_frameIndex ].draw( b_images_x, b_images_y, frameW, frameH );
+    b_images[ b_frameIndex ].draw( 0, 0, frameW, frameH );
     
     
     // ============= cam mask =============
     ofEnableAlphaBlending();
-    //chromakey->drawFinalImage(0, 0, camW, camH);
+    //chromakey->drawFinalImage(0, 0, camW, camH );
     chromakey->drawFinalImage( maskX, maskY, maskW, maskH);
     ofDisableAlphaBlending();
     
@@ -421,93 +428,131 @@ void ofApp::keyPressed(int key){
             
             
         case OF_KEY_UP:
-            b_current_gif += 1;
-            if ( b_current_gif > b_max_gifs ) {
-                b_current_gif = 0;
-            }
-            b_images.clear();
-            
-            b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
-            if(b_nFiles) {
-                
-                for(int i=0; i<b_dir.size(); i++) {
-                    string filePath = b_dir.getPath(i);
-                    b_images.push_back(ofImage());
-                    b_images.back().load(filePath);
+            if ( !startTimer && !capture_gif ) {
+                b_current_gif += 1;
+                if ( b_current_gif > b_max_gifs ) {
+                    b_current_gif = 0;
                 }
-            }
-            else printf("Could not find background folder\n");
-            setTotalFrames();
-            cout << "b_current_gif: " << b_current_gif << endl;
+                b_images.clear();
+                
+                b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
+                if(b_nFiles) {
+                    
+                    for(int i=0; i<b_dir.size(); i++) {
+                        string filePath = b_dir.getPath(i);
+                        b_images.push_back(ofImage());
+                        b_images.back().load(filePath);
+                    }
+                }
+                else printf("Could not find background folder\n");
+                setTotalFrames();
+                cout << "b_current_gif: " << b_current_gif << endl;
+                }
             break;
             
         case OF_KEY_DOWN:
-            b_current_gif -= 1;
-            if ( b_current_gif <= 0 ) {
-                b_current_gif = b_max_gifs;
-            }
-            b_images.clear();
-            
-            b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
-            if(b_nFiles) {
-                for(int i=0; i<b_dir.size(); i++) {
-                    string filePath = b_dir.getPath(i);
-                    b_images.push_back(ofImage());
-                    b_images.back().load(filePath);
+            if ( !startTimer && !capture_gif ) {
+                b_current_gif -= 1;
+                if ( b_current_gif <= 0 ) {
+                    b_current_gif = b_max_gifs;
                 }
+                b_images.clear();
+                
+                b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
+                if(b_nFiles) {
+                    for(int i=0; i<b_dir.size(); i++) {
+                        string filePath = b_dir.getPath(i);
+                        b_images.push_back(ofImage());
+                        b_images.back().load(filePath);
+                    }
+                }
+                else printf("Could not find background folder\n");
+                setTotalFrames();
+                cout << "b_current_gif: " << b_current_gif << endl;
             }
-            else printf("Could not find background folder\n");
-            setTotalFrames();
-            cout << "b_current_gif: " << b_current_gif << endl;
             break;
 
 
         case OF_KEY_RIGHT:
-            f_current_gif += 1;
-            if ( f_current_gif > f_max_gifs ) {
-                f_current_gif = 0;
-            }
-            f_images.clear();
-            
-            f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
-            if(f_nFiles) {
-                for(int i=0; i<f_dir.size(); i++) {
-                    string filePath = f_dir.getPath(i);
-                    f_images.push_back(ofImage());
-                    f_images.back().load(filePath);
+            if ( !startTimer && !capture_gif ) {
+                f_current_gif += 1;
+                if ( f_current_gif > f_max_gifs ) {
+                    f_current_gif = 0;
                 }
+                f_images.clear();
+                
+                f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
+                if(f_nFiles) {
+                    for(int i=0; i<f_dir.size(); i++) {
+                        string filePath = f_dir.getPath(i);
+                        f_images.push_back(ofImage());
+                        f_images.back().load(filePath);
+                    }
+                }
+                else printf("Could not find foreground folder\n");
+                setTotalFrames();
+                f_images_x = 0;
+                f_images_y = 0;
+                cout << "f_current_gif: " << f_current_gif << endl;
             }
-            else printf("Could not find foreground folder\n");
-            setTotalFrames();
-            f_images_x = 0;
-            f_images_y = 0;
-            cout << "f_current_gif: " << f_current_gif << endl;
             break;
             
         case OF_KEY_LEFT:
-            f_current_gif -= 1;
-            if ( f_current_gif <= 0 ) {
-                f_current_gif = f_max_gifs;
-            }
-            f_images.clear();
-            f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
-            if(f_nFiles) {
-                for(int i=0; i<f_dir.size(); i++) {
-                    string filePath = f_dir.getPath(i);
-                    f_images.push_back(ofImage());
-                    f_images.back().load(filePath);
+            if ( !startTimer && !capture_gif ) {
+                f_current_gif -= 1;
+                if ( f_current_gif <= 0 ) {
+                    f_current_gif = f_max_gifs;
                 }
+                f_images.clear();
+                f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
+                if(f_nFiles) {
+                    for(int i=0; i<f_dir.size(); i++) {
+                        string filePath = f_dir.getPath(i);
+                        f_images.push_back(ofImage());
+                        f_images.back().load(filePath);
+                    }
+                }
+                else printf("Could not find foreground folder\n");
+                setTotalFrames();
+                f_images_x = 0;
+                f_images_y = 0;
+                cout << "f_current_gif: " << f_current_gif << endl;
             }
-            else printf("Could not find foreground folder\n");
-            setTotalFrames();
-            f_images_x = 0;
-            f_images_y = 0;
-            cout << "f_current_gif: " << f_current_gif << endl;
             break;
             
-        case 't':
-            bFrameIndependent = !bFrameIndependent;
+        case '8':
+            if ( bMoveable[ f_current_gif ]) {
+                f_images_y += 10;
+                if ( f_images_y >= frameW ) {
+                    f_images_y = -frameW;
+                }
+            }
             break;
+        case '2':
+            if ( bMoveable[ f_current_gif ]) {
+                f_images_y -= 10;
+                if ( f_images_y <= -frameW ) {
+                    f_images_y = frameW;
+                }
+            }
+            break;
+        case '6':
+            if( bMoveable[ f_current_gif ]) {
+                f_images_x -= 10;
+                if ( f_images_x <= -frameW ) {
+                    f_images_x = frameW;
+                }
+            }
+            break;
+        case '4':
+            if ( bMoveable[ f_current_gif ]) {
+                f_images_x += 10;
+                if ( f_images_x >= frameW ) {
+                    f_images_x = -frameW;
+                }
+            }
+            break;
+
 
     }
     

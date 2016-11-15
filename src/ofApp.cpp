@@ -27,7 +27,7 @@ void ofApp::setup(){
     /////////////////////////
     
     f_current_gif = 0;
-    f_max_gifs = 5;
+    f_max_gifs = 7;
     f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
     if(f_nFiles) {
         for(int i=0; i<f_dir.size(); i++) {
@@ -46,7 +46,7 @@ void ofApp::setup(){
     /////////////////////////
     
     b_current_gif = 0;
-    b_max_gifs = 6;
+    b_max_gifs = 7;
     b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
     if(b_nFiles) {
         for(int i=0; i<b_dir.size(); i++) {

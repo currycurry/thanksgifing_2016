@@ -5,6 +5,7 @@ void ofApp::setup(){
     
     bShowGui = false;
     bUpdateBgColor = true;
+    bFrameIndependent = true;
     
     frameW = 640; frameH = 640;
     camW = 640; camH = 480;
@@ -19,6 +20,24 @@ void ofApp::setup(){
     ofSetWindowShape(camW*2, camH*1.5f);
     
     chromakey = new ofxChromaKeyShader(camW, camH);
+    
+    /////////////////////////
+    //transparent gif layer//
+    /////////////////////////
+    current_gif = 0;
+    max_gifs = 5;
+    
+    nFiles = dir.listDir("transparent_gifs/" + ofToString( current_gif ));
+    if(nFiles) {
+        for(int i=0; i<dir.size(); i++) {
+            // add the image to the vector
+            string filePath = dir.getPath(i);
+            images.push_back(ofImage());
+            images.back().loadImage(filePath);
+        }
+    }
+    
+    else printf("Could not find folder\n");
     
     // webcam setup
     webcam.setDesiredFrameRate(60);
@@ -42,12 +61,38 @@ void ofApp::setup(){
     ofClear(255,255,255, 0);
     fbo.end();
     
+    //gif encoder
+    sequenceFPS = 5;
+    file_number = ofGetUnixTime();
+    export_frame_duration = 1 / sequenceFPS;
+    gifEncoder.setup(frameW, frameH, export_frame_duration, 256);
+    ofAddListener(ofxGifEncoder::OFX_GIF_SAVE_FINISHED, this, &ofApp::onGifSaved);
+    nFrames = 0;
+    totalFrames = images.size();
+    cout << "totalFrames: " << totalFrames << endl;
+    capture_gif = false;
+    frameIndex = 0;
+    lastFrameIndex = 0;
+    
+    startTimer = false;
+    picTimer = 0;
+    picDelay = 2000;
+    picStart = 0;
+    
+    display_gif_done = false;
+    doneTimer = 0;
+    doneDelay = 3000;
+    doneStart = 0;
+
+    
   
 }
 
 //--------------------------------------------------------------
 void ofApp::exit() {
     delete chromakey;
+    gifEncoder.exit();
+
 }
 
 //--------------------------------------------------------------
@@ -73,6 +118,28 @@ void ofApp::update(){
     fbo.begin();
     drawToFBO();
     fbo.end();
+    
+    
+    // start gif
+    if ( startTimer ) {
+        picTimer = ofGetElapsedTimeMillis() - picStart;
+        
+        if ( picTimer >= picDelay && picTimer != 0 ) {
+            cout << "timer up" << endl;
+            capture_gif = true;
+            startTimer = false;
+        }
+    }
+    
+    if ( display_gif_done ) {
+        doneTimer = ofGetElapsedTimeMillis() - doneStart;
+        
+        if ( doneTimer >= doneDelay && doneTimer != 0 ) {
+            cout << "done timer up" << endl;
+            display_gif_done = false;
+        }
+    }
+
 
 }
 
@@ -115,13 +182,58 @@ void ofApp::drawToFBO(){
     //background
     bg_image.draw(0, 0, frameW, frameH );
     
-    // draw Cam mask
+    // ============= cam mask =============
     ofEnableAlphaBlending();
     //chromakey->drawFinalImage(0, 0, camW, camH);
     chromakey->drawFinalImage( maskX, maskY, maskW, maskH);
     ofDisableAlphaBlending();
     
-    //foreground
+    // ============= foreground =============
+    ofEnableAlphaBlending();
+    // we need some images if not return
+    if((int)images.size() <= 0) {
+        ofSetColor(255);
+        ofDrawBitmapString("No Images...", 150, ofGetHeight()/2);
+        return;
+    }
+    
+    frameIndex = 0;
+    
+    if(bFrameIndependent) {
+        // calculate the frame index based on the app time
+        // and the desired sequence fps. then mod to wrap
+        frameIndex = (int)( ofGetElapsedTimef() * sequenceFPS ) % images.size();
+    }
+    else {
+        // set the frame index based on the app frame
+        // count. then mod to wrap.
+        frameIndex = ofGetFrameNum() % images.size();
+    }
+    
+    // draw the image sequence at the new frame count
+    ofSetColor(255);
+    images[ frameIndex ].draw( images_x, images_y, frameW, frameH );
+    
+    if ( capture_gif && lastFrameIndex != frameIndex ) {
+        cout << "capturing" << endl;
+        captureFrame();
+        nFrames ++;
+        
+        if ( nFrames >= totalFrames ) {
+            cout << "finishing capture" << endl;
+            capture_gif = false;
+            cout <<"start saving\n" << endl;
+            file_number = ofGetUnixTime();
+            gifEncoder.save("output/gif_" + ofToString( file_number ) + ".gif");
+            
+            
+            
+        }
+    }
+    
+    lastFrameIndex = frameIndex;
+    ofDisableAlphaBlending();
+
     
 
     
@@ -175,13 +287,126 @@ void ofApp::drawCheckerboard(float x, float y, int width, int height, int size) 
     checkerboardTex.draw(x, y);
 }
 
+
+//--------------------------------------------------------------
+void ofApp::captureFrame() {
+    
+    fbo.readToPixels( fbo_pix );
+    unsigned char* char_pix;
+    char_pix = (unsigned char*) malloc(sizeof(unsigned char) * fbo_pix.size());
+    for ( int i = 0; i < fbo_pix.size(); i ++ ) {
+        char_pix[ i ] = fbo_pix[ i ];
+    }
+    
+    
+    gifEncoder.addFrame(
+                        char_pix,
+                        fbo.getWidth(),
+                        fbo.getHeight(),
+                        32,
+                        1 / sequenceFPS
+                        ); //.1f
+    
+    ofTexture * tx = new ofTexture();
+    tx->allocate(frameW, frameH, GL_RGB);
+    tx->loadData(char_pix, frameW, frameH, GL_RGB);
+    txs.push_back(tx);
+    
+    free( char_pix );
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::onGifSaved(string &fileName) {
+    display_gif_done = true;
+    doneStart = ofGetElapsedTimeMillis();
+    cout << "gif saved as " << fileName << endl;
+    clear_gif_buffer();
+    doneStart = ofGetElapsedTimeMillis();
+    doneTimer = 0;
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::clear_gif_buffer() {
+    
+    txs.clear();
+    txs.resize( 0 );
+    pxs.clear();
+    pxs.resize( 0 );
+    nFrames = 0;
+    gifEncoder.reset();
+    
+}
+
+
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     
     switch ( key ) {
-            case 'f':
+        case 'f':
             fullscreen = !fullscreen;
             break;
+            
+        case ' ':
+            picStart = ofGetElapsedTimeMillis();
+            startTimer = true;
+            break;
+            
+        case OF_KEY_RIGHT:
+            current_gif += 1;
+            if ( current_gif > max_gifs ) {
+                current_gif = 0;
+            }
+            images.clear();
+            //sequenceFPS = frame_rates[ current_gif ];
+            
+            nFiles = dir.listDir("transparent_gifs/" + ofToString( current_gif ));
+            if(nFiles) {
+                
+                for(int i=0; i<dir.numFiles(); i++) {
+                    string filePath = dir.getPath(i);
+                    images.push_back(ofImage());
+                    images.back().loadImage(filePath);
+                }
+            }
+            
+            else printf("Could not find folder\n");
+            totalFrames = images.size();
+            images_x = 0;
+            images_y = 0;
+            cout << "totalFrames: " << totalFrames << endl;
+            
+            
+            cout << "current_gif: " << current_gif << endl;
+            break;
+            
+        case OF_KEY_LEFT:
+            current_gif -= 1;
+            if ( current_gif <= 0 ) {
+                current_gif = max_gifs;
+            }
+            images.clear();
+            //sequenceFPS = frame_rates[ current_gif ];
+            
+            nFiles = dir.listDir("transparent_gifs/" + ofToString( current_gif ));
+            if(nFiles) {
+                for(int i=0; i<dir.numFiles(); i++) {
+                    string filePath = dir.getPath(i);
+                    images.push_back(ofImage());
+                    images.back().loadImage(filePath);
+                }
+            }
+            else printf("Could not find folder\n");
+            totalFrames = images.size();
+            cout << "totalFrames: " << totalFrames << endl;
+            
+            break;
+            
+        case 't':
+            bFrameIndependent = !bFrameIndependent;
+            break;
+
     }
     
 }

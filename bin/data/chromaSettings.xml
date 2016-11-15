@@ -3,10 +3,10 @@
 		<bgColorPos>219.592, 218.265</bgColorPos>
 		<bgColorROIsize>23.4531</bgColorROIsize>
 		<bgColor>0.324561, 0.633448, 0.381793, 1</bgColor>
-		<baseMaskStrength>0.440625</baseMaskStrength>
-		<chromaMaskStrength>0.846875</chromaMaskStrength>
+		<baseMaskStrength>0.46875</baseMaskStrength>
+		<chromaMaskStrength>0.803125</chromaMaskStrength>
 		<greenspillStrength>0.0625</greenspillStrength>
-		<multiplyFilterHueOffset>0.16875</multiplyFilterHueOffset>
+		<multiplyFilterHueOffset>0.20625</multiplyFilterHueOffset>
 		<blurValue>268.8</blurValue>
 		<dilateStep>0</dilateStep>
 		<erodeStep>2</erodeStep>

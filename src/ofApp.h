@@ -4,7 +4,7 @@
 
 #include "ofxChromaKeyShader.h"
 #include "ofxGui.h"
-
+#include "ofxGifEncoder.h"
 class ofApp : public ofBaseApp{
     
 public:
@@ -28,6 +28,8 @@ public:
     
     int frameW, frameH;
     bool fullscreen;
+    float sequenceFPS;
+
 
     
     // === Chroma Key =============================
@@ -44,9 +46,47 @@ public:
     bool bShowGui;
     bool bUpdateBgColor;
     
+    // === Foreground Images =============================
+    ofDirectory dir;
+    vector <ofImage> images;
+    int current_gif;
+    int nFiles;
+    int numFrames_import;
+    int duration;
+    bool  bFrameIndependent;
+    int images_x, images_y;
+    int max_gifs;
+
+    
     // === FBO =============================
     ofFbo fbo;
     ofPixels fbo_pix;
     void drawToFBO();
+    
+    // === Gif Encoder =============================
+    ofxGifEncoder gifEncoder;
+    void onGifSaved(string & fileName);
+    void captureFrame();
+    void clear_gif_buffer();
+    
+    bool capture_gif;
+    vector <ofTexture *> txs; // for previewing
+    vector <ofxGifFrame *> pxs;
+    int file_number;
+    float export_frame_duration;
+    int nFrames;
+    int totalFrames;
+    int frameIndex;
+    int lastFrameIndex;
+    
+    int     picStart, doneStart;
+    int     picTimer, doneTimer;
+    int     picDelay, doneDelay;
+    bool    startTimer;
+    
+    ofTrueTypeFont font;
+    
+    bool display_gif_done;
+
 
 };

@@ -29,12 +29,11 @@ public:
     int frameW, frameH;
     bool fullscreen;
     float sequenceFPS;
-
-
     
+    bool bBoothMachine;
+    bool bUseArduino;
+
     // === Chroma Key =============================
-    ofImage bg_image;
-    
     ofxChromaKeyShader *chromakey;
     ofVideoGrabber webcam;
     int camW, camH;
@@ -96,6 +95,7 @@ public:
     ofTrueTypeFont font;
     
     bool display_gif_done;
+    string save_path;
 
 
 };

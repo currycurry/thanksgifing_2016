@@ -23,8 +23,8 @@ void ofApp::setup(){
     /////////////////////////
     //transparent gif layer//
     /////////////////////////
+    f_max_gifs = 14;
     f_current_gif = 0;
-    f_max_gifs = 7;
     f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
     if(f_nFiles) {
         for(int i=0; i<f_dir.size(); i++) {
@@ -46,14 +46,20 @@ void ofApp::setup(){
     bMoveable[ 5 ] = 1;
     bMoveable[ 6 ] = 1;
     bMoveable[ 7 ] = 1;
+    bMoveable[ 8 ] = 1;
+    bMoveable[ 9 ] = 1;
+    bMoveable[ 10 ] = 1;
+    bMoveable[ 11 ] = 1;
+    bMoveable[ 12 ] = 1;
+    bMoveable[ 13 ] = 1;
+    bMoveable[ 14 ] = 1;
 
     
     /////////////////////////
     //background gif layer//
     /////////////////////////
-    
+    b_max_gifs = 12;
     b_current_gif = 0;
-    b_max_gifs = 7;
     b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
     if(b_nFiles) {
         for(int i=0; i<b_dir.size(); i++) {
@@ -72,9 +78,7 @@ void ofApp::setup(){
     ///////////////
     //webcam.setDesiredFrameRate(60);
     webcam.initGrabber(camW, camH);
-    
-    // maskee
-    bg_image.load("bg.jpg");
+
     
     // GUI
     chromaGui.setDefaultHeight(18);
@@ -119,7 +123,8 @@ void ofApp::setup(){
     doneTimer = 0;
     doneDelay = 3000;
     doneStart = 0;
-
+    
+    
     
   
 }
@@ -148,7 +153,8 @@ void ofApp::update(){
     if(webcam.isFrameNew()) {
         if(bUpdateBgColor)
             chromakey->updateBgColor(webcam.getPixelsRef());
-        chromakey->updateChromakeyMask(webcam.getTextureReference(), bg_image.getTextureReference());
+        chromakey->updateChromakeyMask(webcam.getTextureReference(), b_images[ b_frameIndex ].getTextureReference());
+
     }
     
     fbo.begin();

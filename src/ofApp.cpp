@@ -23,7 +23,7 @@ void ofApp::setup(){
     /////////////////////////
     //transparent gif layer//
     /////////////////////////
-    f_max_gifs = 25;
+    f_max_gifs = 26;
     f_current_gif = 0;
     f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
     if(f_nFiles) {
@@ -64,6 +64,8 @@ void ofApp::setup(){
     bMoveable[ 23 ] = 1;
     bMoveable[ 24 ] = 1;
     bMoveable[ 25 ] = 1;
+    bMoveable[ 26 ] = 1;
+
 
 
 

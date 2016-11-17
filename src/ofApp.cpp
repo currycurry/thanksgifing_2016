@@ -447,7 +447,7 @@ void ofApp::keyPressed(int key){
             if ( !startTimer && !capture_gif ) {
                 b_current_gif += 1;
                 if ( b_current_gif > b_max_gifs ) {
-                    b_current_gif = 0;
+                    b_current_gif = 0;x
                 }
                 b_images.clear();
                 

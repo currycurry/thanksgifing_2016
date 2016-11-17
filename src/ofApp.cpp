@@ -5,7 +5,6 @@ void ofApp::setup(){
     
     bShowGui = false;
     bUpdateBgColor = false;
-    bBoothMachine = true;
     
     fullscreen = true;
     font.load("font/cooperBlack.ttf", 120 );
@@ -24,12 +23,12 @@ void ofApp::setup(){
     /////////////////////////
     //transparent gif layer//
     /////////////////////////
-    f_max_gifs = 14;
+    f_max_gifs = 20;
     f_current_gif = 0;
     f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
     if(f_nFiles) {
         for(int i=0; i<f_dir.size(); i++) {
-            // add the image to the vector
+            // add the image to thevector
             string filePath = f_dir.getPath(i);
             f_images.push_back(ofImage());
             f_images.back().load(filePath);
@@ -54,6 +53,12 @@ void ofApp::setup(){
     bMoveable[ 12 ] = 1;
     bMoveable[ 13 ] = 1;
     bMoveable[ 14 ] = 1;
+    bMoveable[ 15 ] = 1;
+    bMoveable[ 16 ] = 1;
+    bMoveable[ 17 ] = 1;
+    bMoveable[ 18 ] = 1;
+    bMoveable[ 19 ] = 1;
+    bMoveable[ 20 ] = 1;
 
     
     /////////////////////////
@@ -95,7 +100,7 @@ void ofApp::setup(){
     fbo.end();
     
     //gif encoder
-    sequenceFPS = 10;
+    sequenceFPS = 5;
     file_number = ofGetUnixTime();
     export_frame_duration = 1 / sequenceFPS;
     gifEncoder.setup(frameW, frameH, export_frame_duration, 256);
@@ -123,12 +128,7 @@ void ofApp::setup(){
     doneDelay = 3000;
     doneStart = 0;
     
-    if ( bBoothMachine ) {
-        save_path = ofFilePath::getAbsolutePath("/Users/chrisallick/Desktop/photos/");
-        cout << "save path: " << save_path << endl;
-    }
-
-
+    
     
   
 }
@@ -221,7 +221,7 @@ void ofApp::draw(){
         //string success = "GIF CAPTURED!";
         //string over_there = "<-----";
         font.drawString( "GIF CAPTURED!", ofGetWidth() / 2 - 700, ofGetHeight() / 2 - 100 );
-        font.drawString( "<-----", ofGetWidth() / 2 - 400, ofGetHeight() / 2 + 100 );
+        font.drawString( "<-----", ofGetWidth() / 2 - 500, ofGetHeight() / 2 + 100 );
     }
 
     
@@ -232,7 +232,7 @@ void ofApp::draw(){
         //drawDebugMasks();
         
         // draw bg color's reference Rect
-        /*if(bUpdateBgColor) {
+        if(bUpdateBgColor) {
             ofPushStyle();
             ofNoFill();
             ofSetLineWidth(3);
@@ -241,7 +241,7 @@ void ofApp::draw(){
             ofDrawRectangle(bgColorPos.x + camW/2, bgColorPos.y, chromakey->bgColorSize.get(), chromakey->bgColorSize.get());
             ofDrawBitmapString("bgColor", bgColorPos.x + camW/2, bgColorPos.y - 5);
             ofPopStyle();
-        }*/
+        }
     }
     
 }
@@ -306,13 +306,9 @@ void ofApp::drawToFBO(){
             capture_gif = false;
             cout <<"start saving\n" << endl;
             file_number = ofGetUnixTime();
+            gifEncoder.save("output/gif_" + ofToString( file_number ) + ".gif");
             
-            if ( bBoothMachine ) {
-                gifEncoder.save( save_path + ofToString( file_number ) + ".gif");
-            }
-            else {
-                gifEncoder.save("output/gif_" + ofToString( file_number ) + ".gif");
-            }
+            
             
         }
     }
@@ -654,10 +650,6 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-    
-    /*if ( bUpdateBgColor ) {
-        chromakey->updateBgColorPos( (float) x, (float) y ).get();
-    }*/
     
 }
 

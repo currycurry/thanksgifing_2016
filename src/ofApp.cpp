@@ -74,7 +74,7 @@ void ofApp::setup(){
     /////////////////////////
     //background gif layer//
     /////////////////////////
-    b_max_gifs = 19;
+    b_max_gifs = 20;
     b_current_gif = 0;
     b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
     if(b_nFiles) {

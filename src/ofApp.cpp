@@ -23,7 +23,7 @@ void ofApp::setup(){
     /////////////////////////
     //transparent gif layer//
     /////////////////////////
-    f_max_gifs = 26;
+    f_max_gifs = 34;
     f_current_gif = 0;
     f_nFiles = f_dir.listDir("transparent_gifs/" + ofToString( f_current_gif ));
     if(f_nFiles) {
@@ -40,9 +40,9 @@ void ofApp::setup(){
     bMoveable.resize( f_max_gifs );
     bMoveable[ 0 ] = 0;
     bMoveable[ 1 ] = 1;
-    bMoveable[ 2 ] = 0;
-    bMoveable[ 3 ] = 0;
-    bMoveable[ 4 ] = 0;
+    bMoveable[ 2 ] = 1;
+    bMoveable[ 3 ] = 1;
+    bMoveable[ 4 ] = 1;
     bMoveable[ 5 ] = 1;
     bMoveable[ 6 ] = 1;
     bMoveable[ 7 ] = 1;
@@ -50,31 +50,36 @@ void ofApp::setup(){
     bMoveable[ 9 ] = 1;
     bMoveable[ 10 ] = 1;
     bMoveable[ 11 ] = 1;
-    bMoveable[ 12 ] = 1;
+    bMoveable[ 12 ] = 0;
     bMoveable[ 13 ] = 1;
     bMoveable[ 14 ] = 1;
     bMoveable[ 15 ] = 1;
-    bMoveable[ 16 ] = 1;
+    bMoveable[ 16 ] = 0;
     bMoveable[ 17 ] = 1;
     bMoveable[ 18 ] = 1;
     bMoveable[ 19 ] = 1;
     bMoveable[ 20 ] = 1;
     bMoveable[ 21 ] = 1;
-    bMoveable[ 22 ] = 1;
+    bMoveable[ 22 ] = 0;
     bMoveable[ 23 ] = 1;
     bMoveable[ 24 ] = 1;
     bMoveable[ 25 ] = 1;
     bMoveable[ 26 ] = 1;
-
-
-
+    bMoveable[ 27 ] = 0;
+    bMoveable[ 28 ] = 1;
+    bMoveable[ 29 ] = 1;
+    bMoveable[ 30 ] = 0;
+    bMoveable[ 31 ] = 1;
+    bMoveable[ 32 ] = 1;
+    bMoveable[ 33 ] = 0;
+    bMoveable[ 34 ] = 0;
 
 
     
     /////////////////////////
     //background gif layer//
     /////////////////////////
-    b_max_gifs = 20;
+    b_max_gifs = 25;
     b_current_gif = 0;
     b_nFiles = b_dir.listDir("background_gifs/" + ofToString( b_current_gif ));
     if(b_nFiles) {
